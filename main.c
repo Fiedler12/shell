@@ -100,6 +100,11 @@ void command(char **command_array[]) {
     if (cmp == 0) {
         exit(1);
     }
+    
+}
+
+void commandNotFound() {
+    printf("Command not found");
 }
 
 
