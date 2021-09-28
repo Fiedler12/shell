@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
-
-#include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 
 void freedom();
 void tokenizer();
@@ -85,16 +86,21 @@ void freedom(char ***command_array)
     }
 }
 
-void command(char **command_array) {
-    
-
-
+void command(char ***command_array) {
+    char fork[6] = {"fork()"};
+    int cmp = NULL;
+    cmp = strcmp(command_array[0], fork);
+    if (cmp == 0) {
+        printf("This is a fork command");
+    }
 }
+
 
 
 int main() {
     while (1)
     {
+        printf("Enter command: ");
         char line[1024] = "";
         char **command_array[1024] = {NULL};
         fgets(line, 1024, stdin);
@@ -102,5 +108,6 @@ int main() {
         command(command_array);
         freedom(command_array);
     }
+
     return 0;
 }
