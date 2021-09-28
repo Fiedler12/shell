@@ -10,6 +10,7 @@ void tokenizer();
 char ** tkn_command();
 void handle_string();
 void command();
+pid_t pid, c_pid;
 
 /*
  * Gets the user input directly and checks if it has
@@ -93,14 +94,14 @@ void command(char **command_array[]) {
     //then we compare our fork command to the command received.
     cmp = strcmp(*command_array[0], forkCommand);
     if (cmp == 0) {
-        fork();
+        c_pid = fork();
     }
     char exitCommand[] = "exit()";
     cmp = strcmp(*command_array[0], exitCommand);
     if (cmp == 0) {
         exit(1);
     }
-    
+
 }
 
 void commandNotFound() {
@@ -112,14 +113,28 @@ void commandNotFound() {
 int main() {
     while (1)
     {
-        printf("you are currently running the process ID: %d \n", (int) getpid());
-        printf("Enter command: ");
-        char line[1024] = "";
-        char **command_array[1024] = {NULL};
-        fgets(line, 1024, stdin);
-        handle_string(line, command_array);
-        command(command_array);
-        freedom(command_array);
+        int status;
+        if (c_pid == 0) {
+            printf("you are currently running the process ID: %d \n", (int) getpid());
+            printf("Enter command: ");
+            char line[1024] = "";
+            char **command_array[1024] = {NULL};
+            fgets(line, 1024, stdin);
+            handle_string(line, command_array);
+            command(command_array);
+            freedom(command_array);
+        }
+        else {
+            wait(NULL);
+            printf("you are currently running the process ID: %d \n", (int) getpid());
+            printf("Enter command: ");
+            char line[1024] = "";
+            char **command_array[1024] = {NULL};
+            fgets(line, 1024, stdin);
+            handle_string(line, command_array);
+            command(command_array);
+            freedom(command_array);
+        }
     }
     return 0;
 }
