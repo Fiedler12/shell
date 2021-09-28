@@ -87,11 +87,18 @@ void freedom(char ***command_array)
 }
 
 void command(char **command_array[]) {
-    char *fork[6] = {"fork()"};
+    //first we define a string that corresponds with our fork command to have a reference.
+    char forkCommand[] = "fork()";
     int cmp = NULL;
-    cmp = strcmp(*command_array[0], fork);
+    //then we compare our fork command to the command received.
+    cmp = strcmp(*command_array[0], forkCommand);
     if (cmp == 0) {
-        printf("This is a fork command");
+        fork();
+    }
+    char exitCommand[] = "exit()";
+    cmp = strcmp(*command_array[0], exitCommand);
+    if (cmp == 0) {
+        exit(1);
     }
 }
 
@@ -100,15 +107,14 @@ void command(char **command_array[]) {
 int main() {
     while (1)
     {
+        printf("you are currently running the process ID: %d \n", (int) getpid());
         printf("Enter command: ");
         char line[1024] = "";
         char **command_array[1024] = {NULL};
         fgets(line, 1024, stdin);
         handle_string(line, command_array);
         command(command_array);
-        printf("%s \n", *command_array[0]);
         freedom(command_array);
     }
-
     return 0;
 }
