@@ -86,10 +86,10 @@ void freedom(char ***command_array)
     }
 }
 
-void command(char ***command_array) {
-    char fork[6] = {"fork()"};
+void command(char **command_array[]) {
+    char *fork[6] = {"fork()"};
     int cmp = NULL;
-    cmp = strcmp(command_array[0], fork);
+    cmp = strcmp(*command_array[0], fork);
     if (cmp == 0) {
         printf("This is a fork command");
     }
@@ -106,6 +106,7 @@ int main() {
         fgets(line, 1024, stdin);
         handle_string(line, command_array);
         command(command_array);
+        printf("%s \n", *command_array[0]);
         freedom(command_array);
     }
 
