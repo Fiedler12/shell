@@ -11,7 +11,8 @@ void handle_string();
 void command();
 char **recstring;
 char buffer[80];
-pid_t pid;
+int child_pid;
+void pipeExec();
 
 /*
  * Gets the user input directly and checks if it has
@@ -90,9 +91,9 @@ void freedom(char ***command_array)
 
 void command(char **command_array[]) {
     //first we define a string that corresponds with our fork command to have a reference.
-    pid = fork();
     if (command_array[1] == NULL) {
-        if (pid == 0) {
+        child_pid = fork();
+        if (child_pid == 0) {
             execvp(command_array[0][0], command_array[0]);
         }
         else {
@@ -100,24 +101,30 @@ void command(char **command_array[]) {
         }
     }
     else {
-        int fd[2], bytes;
-        pipe(fd);
-        if (pid == 0) {
-            printf("pipe1");
-            recstring = (char **) command_array[0][0];
-            close(fd[0]);
-            write(fd[1], recstring, (strlen((const char *) recstring) + 1));
-            execvp(command_array[0][0], command_array[0]);
-        }
-        else {
-            close(fd[1]);
-            bytes = read(fd[0], buffer, sizeof(buffer));
-            printf("pipe recieved: %s \n", buffer);
-            execvp(command_array[1][0], command_array[1]);
-        }
-
+        pipeExec();
         }
     }
+
+    void pipeExec(char **command_array[]) {
+            printf("pipe");
+        int fd[2], bytes;
+        child_pid = fork();
+        if (child_pid == 0) {
+            pipe(fd);
+            printf("pipe1");
+                recstring = (char **) command_array[0][0];
+                close(fd[0]);
+                write(fd[1], recstring, (strlen((const char *) recstring) + 1));
+                execvp(command_array[0][0], command_array[0]);
+            }
+            else {
+                wait(NULL);
+                close(fd[1]);
+                bytes = read(fd[0], buffer, sizeof(buffer));
+                printf("pipe recieved: %s \n", buffer);
+                execvp(command_array[1][0], command_array[1]);
+            }
+}
 
 int main() {
     while (1)
