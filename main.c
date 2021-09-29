@@ -102,11 +102,7 @@ void command(char **command_array[]) {
     else {
         int fd[2], bytes;
         pipe(fd);
-        if (pid == -1) {
-            perror("Fork error");
-            exit(0);
-        }
-        if ((pid = fork()) == 0) {
+        if (pid == 0) {
             printf("pipe1");
             recstring = (char **) command_array[0][0];
             close(fd[0]);
