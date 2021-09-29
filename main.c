@@ -10,7 +10,8 @@ void tokenizer();
 char ** tkn_command();
 void handle_string();
 void command();
-char *path = "/bin/";
+char **recstring;
+char buffer[80];
 pid_t pid;
 
 /*
@@ -95,8 +96,39 @@ void command(char **command_array[]) {
         if (pid == 0) {
             execvp(command_array[0][0], command_array[0]);
         }
+        else {
+            wait(NULL);
+        }
     }
-}
+    else {
+        int fd[2], bytes;
+        pipe(fd);
+        if (pid == -1) {
+            perror("Fork error");
+            exit(0);
+        }
+        if ((pid = fork()) == 0) {
+            close(fd[1]);
+            recstring = command_array[0][0];
+            dup2(0, fd[0]);
+            write(fd[1], recstring, (strlen(recstring)+1));
+            execvp(command_array[0][0], command_array[0]);
+            fork();
+            if (pid == 0) {
+                close(fd[0]);
+                dup2(fd[1], 1);
+                bytes = read(fd[0], buffer, sizeof(buffer));
+                execvp(command_array[1][0], command_array[1]);
+            }
+            else {
+                wait(NULL);
+            }
+        }
+        else {
+                wait(NULL);
+            }
+        }
+    }
 
 int main() {
     while (1)
