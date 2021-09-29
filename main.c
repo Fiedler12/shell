@@ -24,7 +24,7 @@ pid_t pid;
  * */
 void handle_string(char* line, char ***command_array)
 {
-    //removing newline charactors
+    //removing newline characters
     size_t ln = strlen(line) - 1;
     if (*line&& line[ln] == '\n')
         line[ln] = '\0';
@@ -110,23 +110,17 @@ void command(char **command_array[]) {
         if ((pid = fork()) == 0) {
             close(fd[1]);
             recstring = command_array[0][0];
-            dup2(0, fd[0]);
-            write(fd[1], recstring, (strlen(recstring)+1));
+            close(fd[0]);
+            write(fd[1], recstring, (strlen(recstring) + 1));
             execvp(command_array[0][0], command_array[0]);
-            fork();
-            if (pid == 0) {
-                close(fd[0]);
-                dup2(fd[1], 1);
+        }
+            else {
+                close(fd[1]);
                 bytes = read(fd[0], buffer, sizeof(buffer));
+                printf("pipe recieved: %s \n", buffer);
                 execvp(command_array[1][0], command_array[1]);
             }
-            else {
-                wait(NULL);
-            }
-        }
-        else {
-                wait(NULL);
-            }
+
         }
     }
 
@@ -134,14 +128,13 @@ int main() {
     while (1)
     {
         int status;
-            printf("you are currently running the process ID: %d \n", (int) getpid());
-            printf("Enter command: ");
-            char line[1024] = "";
-            char **command_array[1024] = {NULL};
-            fgets(line, 1024, stdin);
-            handle_string(line, command_array);
-            command(command_array);
-            freedom(command_array);
+        printf("Enter command: ");
+        char line[1024] = "";
+        char **command_array[1024] = {NULL};
+        fgets(line, 1024, stdin);
+        handle_string(line, command_array);
+        command(command_array);
+        freedom(command_array);
     }
     return 0;
 }
