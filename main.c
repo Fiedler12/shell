@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 
@@ -108,18 +107,18 @@ void command(char **command_array[]) {
             exit(0);
         }
         if ((pid = fork()) == 0) {
-            close(fd[1]);
-            recstring = command_array[0][0];
+            printf("pipe1");
+            recstring = (char **) command_array[0][0];
             close(fd[0]);
-            write(fd[1], recstring, (strlen(recstring) + 1));
+            write(fd[1], recstring, (strlen((const char *) recstring) + 1));
             execvp(command_array[0][0], command_array[0]);
         }
-            else {
-                close(fd[1]);
-                bytes = read(fd[0], buffer, sizeof(buffer));
-                printf("pipe recieved: %s \n", buffer);
-                execvp(command_array[1][0], command_array[1]);
-            }
+        else {
+            close(fd[1]);
+            bytes = read(fd[0], buffer, sizeof(buffer));
+            printf("pipe recieved: %s \n", buffer);
+            execvp(command_array[1][0], command_array[1]);
+        }
 
         }
     }
