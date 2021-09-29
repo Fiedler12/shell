@@ -106,23 +106,21 @@ void command(char **command_array[]) {
     }
 
     void pipeExec(char **command_array[]) {
-            printf("pipe");
-        int fd[2], bytes;
-        child_pid = fork();
-        if (child_pid == 0) {
-            pipe(fd);
-            printf("pipe1");
-                recstring = (char **) command_array[0][0];
-                close(fd[0]);
-                write(fd[1], recstring, (strlen((const char *) recstring) + 1));
-                execvp(command_array[0][0], command_array[0]);
+        int pipefd[2];
+        int pid;
+        pipe(pipefd);
+        pid = fork();
+        if (pid == 0) {
+            recstring = (char **) command_array[0][0];
+            dup2(pipefd[0], 0);
+            close(pipefd[1]);
+            write(pipefd[1], recstring, (strlen((const char *) recstring) + 1));
+            execvp(command_array[0][0], command_array[0]);
             }
             else {
-                wait(NULL);
-                close(fd[1]);
-                bytes = read(fd[0], buffer, sizeof(buffer));
+                dup2(pipefd[1], 1);
+                close(pipefd[0]);
                 printf("pipe recieved: %s \n", buffer);
-                execvp(command_array[1][0], command_array[1]);
             }
 }
 
