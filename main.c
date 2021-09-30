@@ -13,6 +13,7 @@ char **recstring;
 char buffer[80];
 int child_pid;
 void pipeExec();
+int bytes;
 
 /*
  * Gets the user input directly and checks if it has
@@ -23,6 +24,9 @@ void pipeExec();
  * arrays of strings.
  * */
 void handle_string(char* line, char ***command_array)
+/*
+ * @author TA Martin Maartenson
+ */
 {
     //removing newline characters
     size_t ln = strlen(line) - 1;
@@ -52,6 +56,9 @@ void handle_string(char* line, char ***command_array)
  * holds the commands used by the shell.
  * */
 char** tkn_command(char *line)
+/*
+ * @author TA Martin Maartenson
+ */
 {
     char ** command = malloc(1024*sizeof(char*));
     for (int i = 0 ; i < 1024; ++i)
@@ -66,6 +73,9 @@ char** tkn_command(char *line)
  * affects a pointer to a string array.
  * */
 void tokenizer(char *command, char *delim, char *output[])
+/*
+ * @author TA Martin Maartenson
+ */
 {
     int i=0;
     output[i] = strtok(command, delim);
@@ -80,6 +90,9 @@ void tokenizer(char *command, char *delim, char *output[])
  * made in the tkn_command() function.
  * */
 void freedom(char ***command_array)
+/*
+ * @author TA Martin Maartenson
+ */
 {
     for(int i = 0; i>1024; i++){
         for(int j = 0; i>1024; i++){
@@ -89,44 +102,70 @@ void freedom(char ***command_array)
     }
 }
 
+
 void command(char **command_array[]) {
-    //first we define a string that corresponds with our fork command to have a reference.
+    /*
+     * This command is called every time we get a string
+     */
+    //First we check whether there is several commands, which would mean a pipe is present
     if (command_array[1] == NULL) {
+        //If not, we fork to create a child process.
         child_pid = fork();
         if (child_pid == 0) {
+            //The child execs the command
             execvp(command_array[0][0], command_array[0]);
         }
         else {
+            //The parent waits
             wait(NULL);
         }
     }
     else {
+        //If we have a pipe in the command we jump to here.
         pipeExec();
         }
     }
 
     void pipeExec(char **command_array[]) {
+    //we create our pipe and fork.
         int pipefd[2];
-        int pid;
+        //Creating pipe
         pipe(pipefd);
-        pid = fork();
-        if (pid == 0) {
-            recstring = (char **) command_array[0][0];
-            dup2(pipefd[0], 0);
-            close(pipefd[1]);
-            write(pipefd[1], recstring, (strlen((const char *) recstring) + 1));
+        int pid1 = fork();
+        if (pid1 == 0) {
+            //child process 1
+            //Duplicate our STDOUT to our Pipe
+            dup2(pipefd[1], STDOUT_FILENO);
+            //We close our read end of the pipe
+            close(pipefd[0]);
+            //Exec the first command
             execvp(command_array[0][0], command_array[0]);
+            int pid2 = fork();
+            if (pid2 == 0) {
+                //child process 2
+                //Duplicate our STDIN to our pipe.
+                dup2(pipefd[0], STDIN_FILENO);
+                //We close the write end og our pipe
+                close(pipefd[1]);
+                // Exec the second command
+                execvp(command_array[1][0], command_array[1]);
             }
             else {
-                dup2(pipefd[1], 1);
-                close(pipefd[0]);
-                printf("pipe recieved: %s \n", buffer);
+                //Child process 1 wait.
+                wait(NULL);
+            }
+            }
+            else {
+                //Parent wait.
+                wait(NULL);
+
             }
 }
 
 int main() {
     while (1)
     {
+        // @Authur TA Martin Maartenson
         int status;
         printf("Enter command: ");
         char line[1024] = "";
