@@ -123,7 +123,7 @@ void command(char **command_array[]) {
         }
     }
 
-    void pipeExec(char **command_array[]) {
+void pipeExec(char **command_array[]) {
     //we create our pipe and fork.
         int pipefd[2];
         //Creating pipe
