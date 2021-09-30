@@ -9,11 +9,8 @@ void tokenizer();
 char ** tkn_command();
 void handle_string();
 void command();
-char **recstring;
-char buffer[80];
 int child_pid;
 void pipeExec();
-int bytes;
 
 /*
  * Gets the user input directly and checks if it has
